@@ -20,5 +20,24 @@ namespace ShEcho.Core
 
 			return null;
 		}
+
+		public void Register(Type type, UIBase ui)
+		{
+			if (!_uis.TryAdd(type, ui))
+			{
+				Logger.LogWarning("UIManager", $"이미 등록된 UI 입니다 {type}");
+			}
+		}
+
+		public void Unregister(Type type)
+		{
+			if (!_uis.ContainsKey(type))
+			{
+				Logger.LogWarning("UIManager", $"등록되지 않은 UI 입니다 {type}");
+				return;
+			}
+
+			_uis.Remove(type);
+		}
 	}
 }
