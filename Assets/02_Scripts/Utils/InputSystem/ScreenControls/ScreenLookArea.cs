@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.Layouts;
@@ -9,7 +7,7 @@ using UnityEngine.InputSystem.OnScreen;
 namespace ShEcho.Utils.InputSystem.ScreenControls
 {
 	[AddComponentMenu("Input/On-Screen Look Area")]
-	public class ScreenLookArea : OnScreenControl, IBeginDragHandler, IDragHandler, IEndDragHandler
+	public class ScreenLookArea : OnScreenControl, IPointerDownHandler, IDragHandler, IPointerUpHandler
 	{
 		[InputControl(layout = "Vector2")] [SerializeField]
 		private string controlInputPath;
@@ -20,45 +18,34 @@ namespace ShEcho.Utils.InputSystem.ScreenControls
 			set => controlInputPath = value;
 		}
 
-		private RectTransform _cachedRectTr;
 		private List<RaycastResult> _raycastResults;
-		private Vector2 _delta;
+		private Vector2 _lastMousePosition;
 
 		private void Start()
 		{
-			_cachedRectTr = transform as RectTransform;
 			_raycastResults = new List<RaycastResult>(1);
 		}
 
-		public void OnBeginDrag(PointerEventData eventData)
+		public void OnPointerDown(PointerEventData eventData)
 		{
-			_delta = Vector2.zero;
-		}
-
-		private void Update()
-		{
-			SendValueToControl(_delta);
-			
-			_delta = Vector2.zero;
+			_lastMousePosition = eventData.position;
 		}
 
 		public void OnDrag(PointerEventData eventData)
 		{
-			bool isOver = RectTransformUtility.RectangleContainsScreenPoint(_cachedRectTr, eventData.position);
-			if (isOver && IsTopMostUI(eventData))
+			Vector2 delta = Vector2.zero;
+			
+			if (IsTopMostUI(eventData))
 			{
-				_delta = eventData.delta;
+				delta = eventData.position - _lastMousePosition;
 			}
-			else
-			{
-				_delta = Vector2.zero;
-			}
+			SendValueToControl(delta);
+			
+			_lastMousePosition = eventData.position;
 		}
 		
-		public void OnEndDrag(PointerEventData eventData)
+		public void OnPointerUp(PointerEventData eventData)
 		{
-			_delta = Vector2.zero;
-			
 			SendValueToControl(Vector2.zero);
 		}
 		
@@ -66,7 +53,12 @@ namespace ShEcho.Utils.InputSystem.ScreenControls
 		{
 			EventSystem.current.RaycastAll(eventData, _raycastResults);
 
-			return _raycastResults[0].gameObject == gameObject;
+			bool ret = false;
+			if (_raycastResults.Count > 0)
+			{
+				ret = _raycastResults[0].gameObject == gameObject;
+			}
+			return ret;
 		}
 	}
 }
