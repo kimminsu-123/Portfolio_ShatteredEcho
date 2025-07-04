@@ -1,44 +1,46 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Logger = ShEcho.Utils.Logger;
 
 namespace ShEcho.Player
 {
+	[RequireComponent(typeof(CapsuleCollider), typeof(PlayerMotor))]
 	public class PlayerController : MonoBehaviour
 	{
 		[Header("입력 액션 들")]
 		public InputActionReference moveInputAction;
-		public InputActionReference sprintInputAction;
-		
-		[Header("이동 관련 속성들")]
-		public float walkSpeed = 2f;
-		public float sprintSpeed = 5f;
-		public float rotateSpeed = 10f;
+		public InputActionReference jumpInputAction;
 
+		private PlayerMotor _motor;
 		private Camera _mainCam;
 
-		private bool _isSprint;
+		private void Awake()
+		{
+			_motor = GetComponent<PlayerMotor>();
+		}
 
 		private void Start()
 		{
 			_mainCam = Camera.main;
-			
-			sprintInputAction.action.started += _ => _isSprint = true;
-			sprintInputAction.action.canceled += _ => _isSprint = false;
 		}
 
-		public void Update()
+		private void Update()
 		{
-			Vector2 input = moveInputAction.action.ReadValue<Vector2>();
-
-			if (input.sqrMagnitude > 0f)
+			Vector2 input = Vector3.ClampMagnitude(moveInputAction.action.ReadValue<Vector2>(), 1f);
+			
+			CalculateCameraDirection(input, out Vector3 direction);
+			
+			if (jumpInputAction.action.WasPerformedThisFrame())
 			{
-				CalculateCameraDirection(input, out Vector3 direction);
-				Rotate(direction);
-				Move(direction);	
+				_motor.Jump();
 			}
-		}
 
+			_motor.CurrentDirection = direction;
+			_motor.Rotate();
+			_motor.Move();
+		}
+	
 		private void CalculateCameraDirection(Vector3 input, out Vector3 direction)
 		{
 			Vector3 camForward = _mainCam.transform.forward;
@@ -50,19 +52,6 @@ namespace ShEcho.Player
 			camRight.Normalize();
 				
 			direction = (camForward * input.y + camRight * input.x).normalized * input.magnitude;
-		}
-
-		private void Move(Vector3 direction)
-		{
-			float moveSpeed = _isSprint ? sprintSpeed : walkSpeed;
-			transform.position += direction * (moveSpeed * Time.deltaTime);
-		}
-
-		private void Rotate(Vector3 direction)
-		{
-			float rotateStep = rotateSpeed * Time.deltaTime;
-			Vector3 rotateTowards = Vector3.RotateTowards(transform.forward, direction, rotateStep, 0f);
-			transform.rotation = Quaternion.LookRotation(rotateTowards);
 		}
 	}
 }
