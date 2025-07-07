@@ -30,17 +30,20 @@ namespace ShEcho.Player
 			Vector2 input = Vector3.ClampMagnitude(moveInputAction.action.ReadValue<Vector2>(), 1f);
 			
 			CalculateCameraDirection(input, out Vector3 direction);
+			_motor.CurrentDirection = direction;
+		}
+
+		private void FixedUpdate()
+		{
+			_motor.Rotate();
+			_motor.Move();
 			
 			if (jumpInputAction.action.WasPerformedThisFrame())
 			{
 				_motor.Jump();
 			}
-
-			_motor.CurrentDirection = direction;
-			_motor.Rotate();
-			_motor.Move();
 		}
-	
+
 		private void CalculateCameraDirection(Vector3 input, out Vector3 direction)
 		{
 			Vector3 camForward = _mainCam.transform.forward;

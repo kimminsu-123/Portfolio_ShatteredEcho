@@ -3,7 +3,6 @@ using NaughtyAttributes;
 using ShEcho.Utils;
 using ShEcho.Utils.Entities;
 using UnityEngine;
-using Logger = ShEcho.Utils.Logger;
 
 namespace ShEcho.Player
 {
@@ -14,18 +13,16 @@ namespace ShEcho.Player
 		[MinMaxSlider(1f, 50f)] public Vector2 minMaxMoveSpeed = new(4f, 7f);
 		public float jumpHeight = 1.5f;
 
-		[Header("경사로/계단 관련 세팅")]
-		[Range(0f, 80f)] public float maxSlopeAngle = 60f;
-		[Range(0f, 10f)] public float minStepHeight = 0.3f;
-
 		public Vector3 CurrentDirection { get; set; }
 
 		public GroundChecker GroundChecker { get; private set; }
+		public StairChecker StairChecker { get; private set; }
 		public Rigidbody CachedRigidbody { get; private set; }
 
 		private void Awake()
 		{
 			GroundChecker = GetComponent<GroundChecker>();
+			StairChecker = GetComponent<StairChecker>();
 			CachedRigidbody = GetComponent<Rigidbody>();
 		}
 
@@ -34,44 +31,52 @@ namespace ShEcho.Player
 			GroundChecker.CheckGround();
 		}
 
-		private bool CheckSlope()
+		private void MoveOnSlope(float moveSpeed)
 		{
-			if (!GroundChecker.CurrentGroundStatus.IsGrounded) return false;
-			
-			GroundStatus curGroundStatus = GroundChecker.CurrentGroundStatus;
-			Vector3 groundNormal = curGroundStatus.Normal;
-			
-			float dot = Vector3.Dot(transform.up, groundNormal);
-			float angle = Mathf.Acos(dot) * Mathf.Rad2Deg;
+			Vector3 velocity = CurrentDirection * moveSpeed;
+			Vector3 projection = Vector3.ProjectOnPlane(CurrentDirection, GroundChecker.CurrentGroundStatus.Normal).normalized;
 
-			return !Mathf.Approximately(angle, 0f) && angle <= maxSlopeAngle;
+			CachedRigidbody.useGravity = false;
+			CachedRigidbody.linearVelocity = projection * velocity.magnitude;
+		}
+
+		private void MoveOnFlatGround(float moveSpeed)
+		{
+			Vector3 velocity = CurrentDirection * moveSpeed;
+			velocity.y = CachedRigidbody.linearVelocity.y;
+
+			CachedRigidbody.useGravity = true;
+			CachedRigidbody.linearVelocity = velocity;
 		}
 
 		public void ForceUnGround()
 		{
-			CachedRigidbody.position += Vector3.up * 0.1f;
+			CachedRigidbody.position += Vector3.up * GroundChecker.distance;
 		}
 		
 		public void Move()
 		{
-			// 앞으로 Ray를 쏴서 다음지점의각도를 미리 구해야할 듯
-			
 			float moveSpeed = Mathf.Lerp(minMaxMoveSpeed.x, minMaxMoveSpeed.y, CurrentDirection.magnitude);
 
-			Vector3 velocity = CurrentDirection * moveSpeed;
-			bool isSlope = CheckSlope();
-			if (isSlope)
+			bool isStair = StairChecker.CheckStair();
+			if (isStair && CurrentDirection.sqrMagnitude > 0f)
 			{
-				Vector3 projection = Vector3.ProjectOnPlane(CurrentDirection, GroundChecker.CurrentGroundStatus.Normal).normalized;
-				velocity = projection * velocity.magnitude;
-				velocity += Vector3.down * Mathf.Abs(CachedRigidbody.linearVelocity.y);
+				CachedRigidbody.position += Vector3.up * StairChecker.stepHeight;
 			}
 			else
 			{
-				velocity.y = CachedRigidbody.linearVelocity.y;
+				GroundStatus.Status status = GroundChecker.CurrentGroundStatus.CurrentStatus;
+				switch (status)
+				{
+					case GroundStatus.Status.Ungrounded:
+					case GroundStatus.Status.Flatted:
+						MoveOnFlatGround(moveSpeed);
+						break;
+					case GroundStatus.Status.Sloped:
+						MoveOnSlope(moveSpeed);
+						break;
+				}	
 			}
-
-			CachedRigidbody.linearVelocity = velocity;
 		}
 
 		public void Rotate()
@@ -84,7 +89,7 @@ namespace ShEcho.Player
 
 		public void Jump()
 		{
-			if (GroundChecker.CurrentGroundStatus.IsGrounded)
+			if (GroundChecker.CurrentGroundStatus.CurrentStatus != GroundStatus.Status.Ungrounded)
 			{
 				ForceUnGround();
 				
