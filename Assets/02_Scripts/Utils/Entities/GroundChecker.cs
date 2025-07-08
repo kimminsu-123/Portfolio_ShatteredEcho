@@ -20,7 +20,7 @@ namespace ShEcho.Utils.Entities
 		{
 			CurrentGroundStatus = new GroundStatus();
 			PreviousGroundStatus = new GroundStatus();
-			_hits = new RaycastHit[1];
+			_hits = new RaycastHit[2];
 		}
 
 		private void FixedUpdate()
@@ -29,6 +29,12 @@ namespace ShEcho.Utils.Entities
 			{
 				CheckGround();
 			}
+		}
+
+		public void ForceUnGround()
+		{
+			PreviousGroundStatus.CopyFrom(CurrentGroundStatus);
+			CurrentGroundStatus.Reset();
 		}
 
 		public void CheckGround()

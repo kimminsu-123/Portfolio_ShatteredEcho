@@ -1,4 +1,6 @@
 using System;
+using NaughtyAttributes.Test;
+using ShEcho.Utils;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Logger = ShEcho.Utils.Logger;
@@ -12,9 +14,12 @@ namespace ShEcho.Player
 		public InputActionReference moveInputAction;
 		public InputActionReference jumpInputAction;
 
+		[Header("애니메이션")] 
+		public Animator modelAnimator;
+		
 		private PlayerMotor _motor;
 		private Camera _mainCam;
-
+		
 		private void Awake()
 		{
 			_motor = GetComponent<PlayerMotor>();
@@ -31,6 +36,11 @@ namespace ShEcho.Player
 			
 			CalculateCameraDirection(input, out Vector3 direction);
 			_motor.CurrentDirection = direction;
+
+			modelAnimator.SetFloat(Global.PlayerAnimation.HashMagnitude, input.magnitude);
+
+			GroundStatus.Status status = _motor.GroundChecker.CurrentGroundStatus.CurrentStatus;
+			modelAnimator.SetBool(Global.PlayerAnimation.HashIsGround, status != GroundStatus.Status.Ungrounded);
 		}
 
 		private void FixedUpdate()
@@ -40,7 +50,11 @@ namespace ShEcho.Player
 			
 			if (jumpInputAction.action.WasPerformedThisFrame())
 			{
-				_motor.Jump();
+				bool success = _motor.Jump();
+				if (success)
+				{
+					modelAnimator.CrossFade(Global.PlayerAnimation.HashJump, 0f);
+				}
 			}
 		}
 

@@ -6,24 +6,34 @@ using UnityEngine;
 
 namespace ShEcho.Player
 {
-	[RequireComponent(typeof(GroundChecker), typeof(CapsuleCollider), typeof(Rigidbody))]
+	[RequireComponent(typeof(GroundChecker), typeof(Rigidbody))]
 	public class PlayerMotor : MonoBehaviour
 	{
 		[Header("이동 관련 세팅")]
 		[MinMaxSlider(1f, 50f)] public Vector2 minMaxMoveSpeed = new(4f, 7f);
-		public float jumpHeight = 1.5f;
+		public float jumpForce = 1.5f;
 
 		public Vector3 CurrentDirection { get; set; }
 
 		public GroundChecker GroundChecker { get; private set; }
-		public StairChecker StairChecker { get; private set; }
 		public Rigidbody CachedRigidbody { get; private set; }
+
+		private float _curMoveSpeed;
 
 		private void Awake()
 		{
 			GroundChecker = GetComponent<GroundChecker>();
-			StairChecker = GetComponent<StairChecker>();
 			CachedRigidbody = GetComponent<Rigidbody>();
+		}
+
+		private void Start()
+		{
+			CachedRigidbody.freezeRotation = true;
+		}
+
+		private void Update()
+		{
+			_curMoveSpeed = Mathf.Lerp(minMaxMoveSpeed.x, minMaxMoveSpeed.y, CurrentDirection.magnitude);
 		}
 
 		private void FixedUpdate()
@@ -31,54 +41,38 @@ namespace ShEcho.Player
 			GroundChecker.CheckGround();
 		}
 
-		private void MoveOnSlope(float moveSpeed)
+		private void MoveOnSlope()
 		{
-			Vector3 velocity = CurrentDirection * moveSpeed;
 			Vector3 projection = Vector3.ProjectOnPlane(CurrentDirection, GroundChecker.CurrentGroundStatus.Normal).normalized;
 
 			CachedRigidbody.useGravity = false;
-			CachedRigidbody.linearVelocity = projection * velocity.magnitude;
+			CachedRigidbody.linearVelocity = projection * _curMoveSpeed;
 		}
 
-		private void MoveOnFlatGround(float moveSpeed)
+		private void MoveOnFlatGround()
 		{
-			Vector3 velocity = CurrentDirection * moveSpeed;
-			velocity.y = CachedRigidbody.linearVelocity.y;
-
 			CachedRigidbody.useGravity = true;
+
+			Vector3 velocity = CurrentDirection * _curMoveSpeed;
+			velocity.y = CachedRigidbody.linearVelocity.y;
 			CachedRigidbody.linearVelocity = velocity;
 		}
 
-		public void ForceUnGround()
-		{
-			CachedRigidbody.position += Vector3.up * GroundChecker.distance;
-		}
-		
 		public void Move()
 		{
-			float moveSpeed = Mathf.Lerp(minMaxMoveSpeed.x, minMaxMoveSpeed.y, CurrentDirection.magnitude);
-
-			bool isStair = StairChecker.CheckStair();
-			if (isStair && CurrentDirection.sqrMagnitude > 0f)
+			GroundStatus.Status status = GroundChecker.CurrentGroundStatus.CurrentStatus;
+			switch (status)
 			{
-				CachedRigidbody.position += Vector3.up * StairChecker.stepHeight;
-			}
-			else
-			{
-				GroundStatus.Status status = GroundChecker.CurrentGroundStatus.CurrentStatus;
-				switch (status)
-				{
-					case GroundStatus.Status.Ungrounded:
-					case GroundStatus.Status.Flatted:
-						MoveOnFlatGround(moveSpeed);
-						break;
-					case GroundStatus.Status.Sloped:
-						MoveOnSlope(moveSpeed);
-						break;
-				}	
-			}
+				case GroundStatus.Status.Ungrounded:
+				case GroundStatus.Status.Flatted:
+					MoveOnFlatGround();
+					break;
+				case GroundStatus.Status.Sloped:
+					MoveOnSlope();
+					break;
+			}	
 		}
-
+		
 		public void Rotate()
 		{
 			if (CurrentDirection != Vector3.zero)
@@ -87,17 +81,22 @@ namespace ShEcho.Player
 			}
 		}
 
-		public void Jump()
+		public bool Jump()
 		{
 			if (GroundChecker.CurrentGroundStatus.CurrentStatus != GroundStatus.Status.Ungrounded)
 			{
-				ForceUnGround();
+				GroundChecker.ForceUnGround();
 				
-				float jumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(Physics.gravity.y) * jumpHeight);
 				Vector3 velocity = CachedRigidbody.linearVelocity;
-				velocity.y = jumpVelocity;
+				velocity.y = 0f;
 				CachedRigidbody.linearVelocity = velocity;
+
+				CachedRigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+
+				return true;
 			}
+
+			return false;
 		}
 	}
 }

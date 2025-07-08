@@ -2,6 +2,16 @@ using UnityEngine;
 
 namespace ShEcho.Utils
 {
+	public class Global
+	{
+		public class PlayerAnimation
+		{
+			public static readonly int HashMagnitude = Animator.StringToHash("Magnitude");
+			public static readonly int HashIsGround = Animator.StringToHash("IsGround");
+			public static readonly int HashJump = Animator.StringToHash("Jump");
+		}
+	}
+	
 	public class GroundStatus
 	{
 		public enum Status
