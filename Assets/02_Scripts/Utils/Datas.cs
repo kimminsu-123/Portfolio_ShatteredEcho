@@ -14,6 +14,8 @@ namespace ShEcho.Utils
 		}
 
 		public const string SPAWN_POINT = "SpawnPoint";
+
+		public const int ANDROID_FRAMERATE = 30;
 	}
 	
 	public class GroundStatus
