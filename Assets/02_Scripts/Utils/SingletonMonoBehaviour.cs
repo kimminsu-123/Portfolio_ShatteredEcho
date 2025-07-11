@@ -50,7 +50,7 @@ namespace ShEcho.Utils
 			OnAwake();
 		}
 
-		protected virtual void OnDestroy()
+		protected void OnDestroy()
 		{
 			if (_instance != null)
 			{

@@ -2,7 +2,7 @@ using JetBrains.Annotations;
 
 namespace ShEcho.Utils
 {
-    public class EventBus<T> where T : IEventBusVariable
+    public class EventBus<T>
     {
         public delegate void Event(T evt);
 

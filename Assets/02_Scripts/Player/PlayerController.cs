@@ -70,5 +70,11 @@ namespace ShEcho.Player
 				
 			direction = (camForward * input.y + camRight * input.x).normalized * input.magnitude;
 		}
+
+		public void Teleport(Vector3 position, Quaternion rotation)
+		{
+			_motor.SetPosition(position);
+			_motor.SetRotation(rotation);
+		}
 	}
 }

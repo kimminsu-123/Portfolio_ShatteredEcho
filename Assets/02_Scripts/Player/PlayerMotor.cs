@@ -98,5 +98,15 @@ namespace ShEcho.Player
 
 			return false;
 		}
+
+		public void SetPosition(Vector3 position)
+		{
+			CachedRigidbody.position = position;
+		}
+
+		public void SetRotation(Quaternion rotation)
+		{
+			CachedRigidbody.rotation = rotation;
+		}
 	}
 }
