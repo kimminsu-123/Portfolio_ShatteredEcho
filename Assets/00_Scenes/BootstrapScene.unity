@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 57940191}
   - component: {fileID: 57940190}
   - component: {fileID: 57940189}
+  - component: {fileID: 57940195}
   - component: {fileID: 57940194}
   m_Layer: 0
   m_Name: FreeLook Camera
@@ -341,6 +342,36 @@ MonoBehaviour:
         DecelTime: 0
   PlayerIndex: -1
   AutoEnableInputs: 1
+--- !u!114 &57940195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 57940186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca7de3aefa901374ba29464584a3109a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CameraRadius: 1
+  Decollision:
+    Enabled: 1
+    ObstacleLayers:
+      serializedVersion: 2
+      m_Bits: 775
+    UseFollowTarget:
+      Enabled: 0
+      YOffset: 0
+    Damping: 0
+    SmoothingTime: 0
+  TerrainResolution:
+    Enabled: 0
+    TerrainLayers:
+      serializedVersion: 2
+      m_Bits: 1
+    MaximumRaycast: 10
+    Damping: 0.5
 --- !u!4 &290979292 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7216698627580028139, guid: a19c60f25e00e4ef391461328e8102a1, type: 3}
@@ -719,9 +750,17 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2569640391040518410, guid: e4036d22b4d0f4d16beb79168412c646, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4561134847632931172, guid: e4036d22b4d0f4d16beb79168412c646, type: 3}
       propertyPath: m_Name
       value: Managers
+      objectReference: {fileID: 0}
+    - target: {fileID: 5789252555230413893, guid: e4036d22b4d0f4d16beb79168412c646, type: 3}
+      propertyPath: m_FillAmount
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7861237266495935429, guid: e4036d22b4d0f4d16beb79168412c646, type: 3}
       propertyPath: m_LocalPosition.x

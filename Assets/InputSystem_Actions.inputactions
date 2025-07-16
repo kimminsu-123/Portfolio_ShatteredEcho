@@ -38,11 +38,11 @@
                     "id": "852140f2-7766-474d-8707-702459ba45f3",
                     "expectedControlType": "",
                     "processors": "",
-                    "interactions": "Hold",
+                    "interactions": "",
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Crouch",
+                    "name": "SwapTime",
                     "type": "Button",
                     "id": "27c5f898-bc57-4ee1-8800-db469aca5fe3",
                     "expectedControlType": "",
@@ -425,7 +425,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "Crouch",
+                    "action": "SwapTime",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -436,7 +436,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Crouch",
+                    "action": "SwapTime",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

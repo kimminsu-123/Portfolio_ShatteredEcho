@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using ShEcho.Core;
 using UnityEngine;
 
 namespace ShEcho.Utils.Entities
@@ -14,13 +15,15 @@ namespace ShEcho.Utils.Entities
 
 		public GroundStatus CurrentGroundStatus { get; private set; }
 		public GroundStatus PreviousGroundStatus { get; private set; }
-		private RaycastHit[] _hits;
+
+		private Sensor _groundSensor;
 		
 		private void Start()
 		{
 			CurrentGroundStatus = new GroundStatus();
 			PreviousGroundStatus = new GroundStatus();
-			_hits = new RaycastHit[2];
+
+			_groundSensor = new RaycastSensor(groundLayer, 2, distance);
 		}
 
 		private void FixedUpdate()
@@ -52,12 +55,10 @@ namespace ShEcho.Utils.Entities
 		
 		private void UpdateGroundStatus()
 		{
-			Ray ray = new Ray(transform.position + offset, Vector3.down);
-
-			int count = Physics.RaycastNonAlloc(ray, _hits, distance, groundLayer);
+			int count = _groundSensor.Detect(transform.position + offset, Vector3.down);
 			if (count > 0)
 			{
-				RaycastHit hit = _hits[0];
+				RaycastHit hit = _groundSensor.Hits[0];
 
 				CurrentGroundStatus.Ground = hit.collider.gameObject;
 				CurrentGroundStatus.Normal = hit.normal;

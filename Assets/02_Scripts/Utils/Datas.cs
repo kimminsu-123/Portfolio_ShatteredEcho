@@ -1,16 +1,22 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 namespace ShEcho.Utils
 {
 	public class Global
 	{
-		public class PlayerAnimation
+		public static class PlayerAnimation
 		{
 			public static readonly int HashMagnitude = Animator.StringToHash("Magnitude");
 			public static readonly int HashIsGround = Animator.StringToHash("IsGround");
 			public static readonly int HashJump = Animator.StringToHash("Jump");
+		}
+
+		public static class ShaderProperty
+		{
+			public static readonly int Intensity = Shader.PropertyToID("_Intensity");
 		}
 
 		public const string SPAWN_POINT = "SpawnPoint";
